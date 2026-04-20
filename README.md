@@ -1,2 +1,1 @@
-# anti-recai
-blog
+# anti-recai 
