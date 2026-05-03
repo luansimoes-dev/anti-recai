@@ -1,0 +1,46 @@
+services:
+  frontend:
+    build: ../frontend
+    container_name: frontend
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    depends_on:
+      - backend
+  backend:
+    build: ../backend
+    container_name: backend
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+
+  postgres:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: postgres:18
+    container_name: postgres_db
+
+    restart: always
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
