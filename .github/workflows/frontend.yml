@@ -1,0 +1,26 @@
+name: Frontend CI/CD
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "18"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm ci
+      - name: Build
+        run: pnpm run build
+      - name: Test
+        run: pnpm test
