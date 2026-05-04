@@ -1,4 +1,34 @@
-This document explains all the surroundings about how the API should work.
+This document explains all the behavior of API.
+
+
+0. Notes for the Spec.
+
+0.1. Terms
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
+
+0.2. Route Syntax
+The route syntax is defined by
+`
+request METHOD(<path>) -> Return{
+  requiredSystems: [(Systems)]
+  body: (BodyType),
+  urlParams: {
+    p1: (Type),
+    p2: (Type)
+  }
+}`
+The following exemplifies one route example:
+`
+request GET("/") -> Out {
+  requiredSystems: [Authentication, Permission(READ)],
+  body: SomeType,
+  urlParams: {
+    p1: int
+  }
+}`
+The request MUST check on the systems on the order they're defined on the `requiredSystems`.
+Thus, check on Authentication System, then Permission System, requiring the permission of 'READ', and then, it can execute properly.
+The usage of 'None' on any params of the request model means that the request MUST NOT receive anything from them, and if so, it SHOULD be ignored, or return INVALID_REQ
 
 1. Requests/Responses
 The requests on the API will be able to be distinguished between(by now) 2 levels. PRIVATE and PUBLIC.
@@ -14,14 +44,18 @@ so with no more difficulties.
 Every Private API, MUST use the Authentication System(see 2). If the Request is not authenticated to be executed, then the server should return an NOAUTH error(see 3).
 
 1.4. Restricted Requests
-Restricted Requests are requests that should be accessed only by restricted users, so users with some specific permissions. The way to define so will be on the routes. The given example explains the nomenclature for it:
+Restricted Requests are requests that SHOULD be accessed only by restricted users, so users with some specific permissions. The way to define so will be on the routes. The given example explains the nomenclature for it:
 
-request POST(Permission.READ && Permission.Write) "/path" (data:T) -> Out;
-where it will require both permissions to READ and WRITE. On no permission, it returns MISSINGPERM(MissingPermission).
+request POST("/path") -> Out {
+  requiredSystems: [Authentication, Permission(Read, Write)],
+  body: None,
+  urlParams: None
+};
+where it will require both permissions to Read and Write. On no permission, it returns MISSING_PERMISSION(MissingPermission).
 
 1.5. Time on Requests/Responses
-Time on requests/response bodies SHOULD ALWAYS follow the default defined on rfc 3339 utilizing explicit timestamp.
-On the requests/response heraders they SHOULD ALWAYS follow the default defined on rfc 7231.
+Time on requests/response bodies SHOULD follow the default defined on rfc 3339 utilizing explicit timestamp.
+On the requests/response heraders they SHOULD follow the default defined on rfc 7231.
 If some timestamp is given and doesn't follow this, it should respond with INVALIDREQ.
 
 2. Authentication System
@@ -37,7 +71,7 @@ Authorization: Bearer <token>
 
 3. Errors
 Errors do follow OAuth2 pattern but with more content since it's being idealized to a Server <-> Client communication. Thus, the status codes will follow OAuth2 pattern, but the body MUST include informations about the error.
-The default body of an error should contain information such the name of the error and the description, and time it happened. Informations about the error and how to solve it, if that's a Public API, or the requester has got Permission.Solution permission.
+The default body of an error SHOULD contain information such the name of the error and the description, and time it happened. Informations about the error and how to solve it, if that's a Public API, or the one trying to execute it has the required `Permission.Solution` permission.
 The following exemplifies so:
 {
   "name": "NOAUTH",
@@ -63,11 +97,37 @@ The following gives an example of INVALID_REQ:
 }
 
 3.3. MISSING_PERMISSION(permission).
-This will happen when some API is sent, is authenticated, but the one trying to execute it, has no permissions to finalize it. This error should occur only on the Permission system.
-Returning 403 on erroring.
+This will happen when some API is sent, is authenticated, but the one trying to execute it, has no permissions to finalize it. This error should occur only on the Permission system. Returns 403 on erroring.
+The missing permission MUST be prefixed in uppercase after a ':' to separate the error from the specifics of that error
 {
   "name": "MISSING_PERMISSION:WRITE",
   "description": "You haven't permission to WRITE",
   "solution": "Request permission to some admin",
   "requestedAt": "2026-05-03T14:30:00Z"
 }
+
+4. Permissions.
+The permission system will contain a set of permissions, and attribute a role that contains some of them. For examples, permissions for read, write, and delete, we assign a role that contains that 3 ones, and give the role to the user.
+When the user requests something, the permission system will check if the role of the requester contains the necessary permissions to execute properly, otherwise, returns MISSING_PERMISSION.
+The following exemplifies how a request would be treated, supposing the following request:
+
+`request POST("/posts/create") -> void {
+  requiredSystems: [Authentication, Permission(Read, Write)],
+  body: BlogPost,
+  urlParams: None
+}`
+
+4.1. Write.
+Permission to write anything on the database, cache, etc. This makes it able to Overwrite/Create things for its own. Thus, an user with Write permission could create a 'POST' but no POST for others.
+
+4.2. Read.
+Permission to read on the database. This mainly for NON-ADM things.
+
+4.3 Delete.
+Permission to delete things on the database. Related only to the creator of the content itself.
+
+4.3. ReadAll.
+Permission to read everything. This is mainly for ADM, which may contain stuff that no other people should have access.
+
+4.4. DeleteAll.
+Permission to delete everything. This is mainly for ADM, which may be able to delete another's post due to not following some rule
