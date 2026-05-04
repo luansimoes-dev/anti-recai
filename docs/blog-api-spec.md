@@ -130,3 +130,394 @@ Permission to read everything. This is mainly for admin, which may contain stuff
 
 4.5. DeleteAll.
 Permission to delete everything. This is mainly for admin, which may be able to delete another's post due to not following some rule
+
+5.0 API Routes
+
+5.1. Autenticação
+
+5.1.1. Create User
+Type: enum PostType { artigo, video, tutorial }
+
+Type: object CreateUserBody {
+  name: string,
+  email: string,
+  password: string
+}
+
+Type: object AuthResponse {
+  jwt: string
+}
+
+request POST("/auth/create-user") -> AuthResponse {
+  requiredSystems: None,
+  body: CreateUserBody,
+  urlParams: None
+}
+
+5.1.2. Login
+Type: object LoginBody {
+  email: string,
+  password: string
+}
+
+request POST("/auth/login") -> AuthResponse {
+  requiredSystems: None,
+  body: LoginBody,
+  urlParams: None
+}
+
+5.1.3. Get Current User
+Type: object UserInfo {
+  id: string,
+  name: string,
+  email: string,
+  bio: string,
+  foto_profile: string,
+  role: string
+}
+
+request GET("/auth/me") -> UserInfo {
+  requiredSystems: [Authentication],
+  body: None,
+  urlParams: None
+}
+
+5.1.4. Modify User
+Type: object UpdateProfileBody {
+  name: string,
+  bio: string,
+  foto_profile: string
+}
+
+request PUT("/auth/modify-user/{id}") -> UserInfo {
+  requiredSystems: [Authentication, Permission(MODIFY_OWN)],
+  body: UpdateProfileBody,
+  urlParams: {
+    id: string
+  }
+}
+
+5.1.5. Delete User
+Type: object DeleteResponse {
+  message: string
+}
+
+request DELETE("/auth/delete-user/{id}") -> DeleteResponse {
+  requiredSystems: [Authentication, Permission(DELETE_OWN)],
+  body: None,
+  urlParams: {
+    id: string
+  }
+}
+
+5.2. Usuários
+
+5.2.1. Get User Profile
+Type: object SimpleUser {
+  name: string,
+  foto: string
+}
+
+Type: object PagedComments {
+  entries: CommentEntry[],
+  page: int,
+  page_size: int,
+  total_entries: int,
+  total_pages: int
+}
+
+Type: object PagedPosts {
+  entries: PostSummary[],
+  page: int,
+  page_size: int,
+  total_entries: int,
+  total_pages: int
+}
+
+Type: object UserProfile {
+  id: string,
+  name: string,
+  bio: string,
+  foto: string,
+  role: string,
+  likes: int,
+  comments: int,
+  posts: PagedPosts
+}
+
+Type: object PostSummary {
+  id: string,
+  name: string,
+  des: string,
+  foto: string,
+  horario: string,
+  type: PostType,
+  author: SimpleUser
+}
+
+Type: object CommentEntry {
+  id: string,
+  parent_id: string|null,
+  depth: int,
+  descri: string,
+  user: SimpleUser,
+  likes: int,
+  dislikes: int,
+  reply_count: int,
+  horario: string
+}
+
+request GET("/users/{id}") -> UserProfile {
+  requiredSystems: None,
+  body: None,
+  urlParams: {
+    id: string
+  }
+}
+
+5.3. Posts
+
+5.3.1. List Posts
+Type: object PagedPosts {
+  entries: PostSummary[],
+  page: int,
+  page_size: int,
+  total_entries: int,
+  total_pages: int
+}
+
+Type: object PostSummary {
+  id: string,
+  name: string,
+  des: string,
+  foto: string,
+  horario: string,
+  type: PostType,
+  author: SimpleUser
+}
+
+Type: object PaginatedQuery {
+  page?: int,
+  type?: string,
+  search?: string
+}
+
+request GET("/posts") -> PagedPosts {
+  requiredSystems: None,
+  body: None,
+  urlParams: PaginatedQuery
+}
+
+5.3.2. Get Post
+Type: object Author {
+  id: string,
+  name: string,
+  foto: string
+}
+
+Type: object PagedComments {
+  entries: CommentEntry[],
+  page: int,
+  page_size: int,
+  total_entries: int,
+  total_pages: int
+}
+
+Type: object CommentEntry {
+  id: string,
+  parent_id: string|null,
+  depth: int,
+  descri: string,
+  user: SimpleUser,
+  likes: int,
+  dislikes: int,
+  reply_count: int,
+  horario: string
+}
+
+Type: object PostContent {
+  id: string,
+  name: string,
+  des: string,
+  decri: string,
+  foto: string,
+  horario: string,
+  type: PostType,
+  author: Author,
+  likes: int,
+  dislikes: int,
+  comments: PagedComments
+}
+
+request GET("/posts/{id}") -> PostContent {
+  requiredSystems: None,
+  body: None,
+  urlParams: {
+    id: string
+  }
+}
+
+5.3.3. Create Post
+Type: object CreatePostBody {
+  name: string,
+  des: string,
+  decri: string,
+  foto: string,
+  type: PostType
+}
+
+Type: object PostContent {
+  id: string,
+  name: string,
+  des: string,
+  decri: string,
+  foto: string,
+  horario: string,
+  type: PostType,
+  author: Author,
+  likes: int,
+  dislikes: int,
+  comments: PagedComments
+}
+
+Type: object Author {
+  id: string,
+  name: string,
+  foto: string
+}
+
+Type: object PagedComments {
+  entries: CommentEntry[],
+  page: int,
+  page_size: int,
+  total_entries: int,
+  total_pages: int
+}
+
+Type: object CommentEntry {
+  id: string,
+  parent_id: string|null,
+  depth: int,
+  descri: string,
+  user: SimpleUser,
+  likes: int,
+  dislikes: int,
+  reply_count: int,
+  horario: string
+}
+
+request POST("/posts") -> PostContent {
+  requiredSystems: [Authentication, Permission(WRITE)],
+  body: CreatePostBody,
+  urlParams: None
+}
+
+5.4. Comentários
+
+5.4.1. Create Comment
+Type: object CommentBody {
+  descri: string,
+  parent_id: string|null
+}
+
+Type: object CommentEntry {
+  id: string,
+  parent_id: string|null,
+  depth: int,
+  descri: string,
+  user: SimpleUser,
+  likes: int,
+  dislikes: int,
+  reply_count: int,
+  horario: string
+}
+
+Type: object SimpleUser {
+  name: string,
+  foto: string
+}
+
+request POST("/posts/{post_id}/comments") -> CommentEntry {
+  requiredSystems: [Authentication],
+  body: CommentBody,
+  urlParams: {
+    post_id: string
+  }
+}
+
+5.4.2. Get Comment Replies
+Type: object PagedComments {
+  entries: CommentEntry[],
+  page: int,
+  page_size: int,
+  total_entries: int,
+  total_pages: int
+}
+
+Type: object CommentEntry {
+  id: string,
+  parent_id: string|null,
+  depth: int,
+  descri: string,
+  user: SimpleUser,
+  likes: int,
+  dislikes: int,
+  reply_count: int,
+  horario: string
+}
+
+Type: object SimpleUser {
+  name: string,
+  foto: string
+}
+
+request GET("/posts/{post_id}/comments/{comment_id}/replies") -> PagedComments {
+  requiredSystems: None,
+  body: None,
+  urlParams: {
+    post_id: string,
+    comment_id: string
+  }
+}
+
+5.4.3. Like Comment
+Type: object CommentLikes {
+  comment_id: string,
+  likes: int,
+  dislikes: int
+}
+
+Type: object SimpleUser {
+  name: string,
+  foto: string
+}
+
+request POST("/posts/{post_id}/comments/{comment_id}/like") -> CommentLikes {
+  requiredSystems: [Authentication],
+  body: None,
+  urlParams: {
+    post_id: string,
+    comment_id: string
+  }
+}
+
+5.4.4. Dislike Comment
+Type: object CommentLikes {
+  comment_id: string,
+  likes: int,
+  dislikes: int
+}
+
+Type: object SimpleUser {
+  name: string,
+  foto: string
+}
+
+request POST("/posts/{post_id}/comments/{comment_id}/dislike") -> CommentLikes {
+  requiredSystems: [Authentication],
+  body: None,
+  urlParams: {
+    post_id: string,
+    comment_id: string
+  }
+}
