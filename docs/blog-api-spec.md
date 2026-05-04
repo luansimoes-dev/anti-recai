@@ -234,16 +234,7 @@ Type: object PagedPosts {
   total_pages: int
 }
 
-Type: object UserProfile {
-  id: string,
-  name: string,
-  bio: string,
-  foto: string,
-  role: string,
-  likes: int,
-  comments: int,
-  posts: PagedPosts
-}
+
 
 Type: object PostSummary {
   id: string,
@@ -266,6 +257,19 @@ Type: object CommentEntry {
   reply_count: int,
   horario: string
 }
+
+
+Type: object UserProfile {
+  id: string,
+  name: string,
+  bio: string,
+  foto: string,
+  role: string,
+  likes: int,
+  comments: int,
+  posts: PagedPosts
+}
+
 
 request GET("/users/{id}") -> UserProfile {
   requiredSystems: None,
