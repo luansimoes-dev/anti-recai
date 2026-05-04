@@ -125,8 +125,8 @@ Permission to read on the database. This mainly for NON-ADM things.
 4.3 Delete.
 Permission to delete things on the database. Related only to the creator of the content itself.
 
-4.3. ReadAll.
+4.4. ReadAll.
 Permission to read everything. This is mainly for ADM, which may contain stuff that no other people should have access.
 
-4.4. DeleteAll.
+4.5. DeleteAll.
 Permission to delete everything. This is mainly for ADM, which may be able to delete another's post due to not following some rule
