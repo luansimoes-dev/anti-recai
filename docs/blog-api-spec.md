@@ -69,7 +69,7 @@ The JWT token MUST be passed following OAuth2 rules(RFC 6750). See https://datat
 Authorization: Bearer <token>
 
 3. Errors
-Errors MUST follow HTTP status code semantics, but Authentication related ones, SHOULD align with OAuth2(RFC 6750). The body of the Authentication errors are idealized to contain more content, such as information about the errors, since it's being used in a Server <-> Client communication.
+Errors MUST follow HTTP status code semantics but Authentication related ones, SHOULD align with OAuth2(RFC 6750). The body of the Authentication errors are idealized to contain more content, such as information about the errors, since it's being used in a Server <-> Client communication.
 The default body of an error SHOULD contain information such the name of the error and the description, and time it happened. Informations about the error and how to solve it, if that's a Public API, or the requester has the required `Permission.Solution` permission.
 The following exemplifies so:
 {
@@ -126,7 +126,7 @@ Permission to read on the database. This mainly for NON-ADM things.
 Permission to delete things on the database. Related only to the creator of the content itself.
 
 4.4. ReadAll.
-Permission to read everything. This is mainly for ADM, which may contain stuff that no other people should have access.
+Permission to read everything. This is mainly for admin, which may contain stuff that no other people should have access.
 
 4.5. DeleteAll.
-Permission to delete everything. This is mainly for ADM, which may be able to delete another's post due to not following some rule
+Permission to delete everything. This is mainly for admin, which may be able to delete another's post due to not following some rule
