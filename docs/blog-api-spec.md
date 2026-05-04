@@ -98,7 +98,7 @@ The following gives an example of INVALID_REQ:
 
 3.3. MISSING_PERMISSION(permission).
 This will happen when some API is sent, is authenticated, but the one trying to execute it, has no permissions to finalize it. This error should occur only on the Permission system. Returns 403 on erroring.
-The missing permission MUST be prefixed in uppercase after a ':' to separate the error from the specifics of that error
+The missing permission error MUST sufixed by the permission that was missing in uppercase, being separated by a ':', such as the following:
 {
   "name": "MISSING_PERMISSION:WRITE",
   "description": "You haven't permission to WRITE",
