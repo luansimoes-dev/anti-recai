@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 📖 Documentação da API
+    url: https://github.com/caina/anti-recai/blob/main/docs/blog-api-spec.md
+    about: Spec completa da API — contratos, erros, autenticação e convenções
+  - name: 🗺️ Rotas da API
+    url: https://github.com/caina/anti-recai/blob/main/docs/rotas.md
+    about: Lista de todos os endpoints disponíveis
