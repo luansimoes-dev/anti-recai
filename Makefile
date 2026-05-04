@@ -74,3 +74,8 @@ check-backend:
 
 check-frontend:
 	cd frontend && pnpm typecheck && pnpm lint
+
+init:
+	echo 'POSTGRES_USER=root' >> .env
+	echo 'POSTGRES_PASSWORD=postgress' >> .env
+	echo 'POSTGRES_DB=db' >> .env
