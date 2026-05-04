@@ -1,5 +1,4 @@
-This document explains all the behavior of API.
-
+This document specifies the behavior of the API.
 
 0. Notes for the Spec.
 
@@ -26,9 +25,9 @@ request GET("/") -> Out {
     p1: int
   }
 }`
-The request MUST check on the systems on the order they're defined on the `requiredSystems`.
-Thus, check on Authentication System, then Permission System, requiring the permission of 'READ', and then, it can execute properly.
-The usage of 'None' on any params of the request model means that the request MUST NOT receive anything from them, and if so, it SHOULD be ignored, or return INVALID_REQ
+The `requiredSystems` is a validation pipeline that MUST validate the received request, sequentially, stopping on the first error.
+Thus, the given example must check on Authentication System, then Permission System, requiring the permission of 'READ', and then, it'd execute properly.
+The usage of 'None' on any params of the request model means that the request MUST NOT receive anything from them, otherwise the request MUST return an INVALID_REQ.
 
 1. Requests/Responses
 The requests on the API will be able to be distinguished between(by now) 2 levels. PRIVATE and PUBLIC.
@@ -41,7 +40,7 @@ Every Public API, MUST be able to be executed with no problems related to authen
 so with no more difficulties.
 
 1.3. Private Requests
-Every Private API, MUST use the Authentication System(see 2). If the Request is not authenticated to be executed, then the server should return an NOAUTH error(see 3).
+Every Private API, MUST use the Authentication System(see 2). If the Request is not authenticated to be executed, then the server should return a NOAUTH error(see 3).
 
 1.4. Restricted Requests
 Restricted Requests are requests that SHOULD be accessed only by restricted users, so users with some specific permissions. The way to define so will be on the routes. The given example explains the nomenclature for it:
@@ -54,24 +53,24 @@ request POST("/path") -> Out {
 where it will require both permissions to Read and Write. On no permission, it returns MISSING_PERMISSION(MissingPermission).
 
 1.5. Time on Requests/Responses
-Time on requests/response bodies SHOULD follow the default defined on rfc 3339 utilizing explicit timestamp.
-On the requests/response heraders they SHOULD follow the default defined on rfc 7231.
-If some timestamp is given and doesn't follow this, it should respond with INVALIDREQ.
+Time on requests/response bodies SHOULD follow the default defined on RFC 3339 using explicit timestamp.
+On the requests/response headers they SHOULD follow the default defined on RFC 7231.
+If some timestamp is given and doesn't follow this, it should respond with INVALID_REQ.
 
 2. Authentication System
-To make sure a request is authenticated, thus, able to execute some PRIVATE api, is used JWT tokens for so. The provided JWT should contain metadata such as, the user id, email, and permissions.
+To make sure a request is authenticated, thus, able to execute some PRIVATE api, is used JWT tokens for so. The provided JWT SHOULD contain metadata such as, the user id, email, and the role.
 The following figure gives an example of it:
 {
   "userId": "someUUID",
   "email": "some@email.com",
   "role": "roleName",
 }.
-The JWT token MUST be passed following OAuth2 rules(RFC6750). See https://datatracker.ietf.org/doc/html/rfc6750 for more information, which is, on Authorization header prefixed by "Bearer ", such as:
+The JWT token MUST be passed following OAuth2 rules(RFC 6750). See https://datatracker.ietf.org/doc/html/rfc6750 for more information, which is, on Authorization header prefixed by "Bearer ", such as:
 Authorization: Bearer <token>
 
 3. Errors
-Errors do follow OAuth2 pattern but with more content since it's being idealized to a Server <-> Client communication. Thus, the status codes will follow OAuth2 pattern, but the body MUST include informations about the error.
-The default body of an error SHOULD contain information such the name of the error and the description, and time it happened. Informations about the error and how to solve it, if that's a Public API, or the one trying to execute it has the required `Permission.Solution` permission.
+Errors MUST follow HTTP status code semantics, but Authentication related ones, SHOULD align with OAuth2(RFC 6750). The body of the Authentication errors are idealized to contain more content, such as information about the errors, since it's being used in a Server <-> Client communication.
+The default body of an error SHOULD contain information such the name of the error and the description, and time it happened. Informations about the error and how to solve it, if that's a Public API, or the requester has the required `Permission.Solution` permission.
 The following exemplifies so:
 {
   "name": "NOAUTH",
@@ -97,11 +96,11 @@ The following gives an example of INVALID_REQ:
 }
 
 3.3. MISSING_PERMISSION(permission).
-This will happen when some API is sent, is authenticated, but the one trying to execute it, has no permissions to finalize it. This error should occur only on the Permission system. Returns 403 on erroring.
-The missing permission error MUST sufixed by the permission that was missing in uppercase, being separated by a ':', such as the following:
+This will happen when some API is sent, is authenticated, but the requester has no permissions to finalize it. This error should occur only on the Permission system. Returns 403 on erroring.
+The missing permission error MUST suffixed by the permission that was missing in uppercase, being separated by a ':', such as the following:
 {
   "name": "MISSING_PERMISSION:WRITE",
-  "description": "You haven't permission to WRITE",
+  "description": "You do not have permission to WRITE",
   "solution": "Request permission to some admin",
   "requestedAt": "2026-05-03T14:30:00Z"
 }
