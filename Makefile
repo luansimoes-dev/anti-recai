@@ -39,7 +39,7 @@ down:
 build: build-backend build-frontend
 
 build-backend:
-	cd backend && ./mvnw package -DskipTests
+	cd backend && mvn package -DskipTests
 
 build-frontend:
 	cd frontend && pnpm build
@@ -47,12 +47,12 @@ build-frontend:
 # ── Run (dev) ─────────────────────────────────────────────────────────────────
 run: 
 	trap 'kill 0' SIGINT; \
-	(cd backend && ./mvnw spring-boot:run) & \
-	(cd frontend && pnpm dev) & \
+	(cd backend && mvn spring-boot:run) & \
+	(cd frontend && pnpm install && pnpm dev) & \
 	wait
 
 run-backend:
-	cd backend && ./mvnw spring-boot:run
+	cd backend && mvn spring-boot:run
 
 run-frontend:
 	cd frontend && pnpm dev
@@ -61,7 +61,7 @@ run-frontend:
 test: test-backend test-frontend
 
 test-backend:
-	cd backend && ./mvnw test
+	cd backend && mvn test
 
 test-frontend:
 	cd frontend && pnpm typecheck && pnpm lint
@@ -70,7 +70,12 @@ test-frontend:
 check: check-backend check-frontend
 
 check-backend:
-	cd backend && ./mvnw validate
+	cd backend && mvn validate
 
 check-frontend:
 	cd frontend && pnpm typecheck && pnpm lint
+
+init:
+	echo 'POSTGRES_USER=root' >> .env
+	echo 'POSTGRES_PASSWORD=postgress' >> .env
+	echo 'POSTGRES_DB=db' >> .env
